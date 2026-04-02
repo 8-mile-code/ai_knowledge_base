@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Env
+.env
+.env.*
+
+# Logs
+*.log
+
+# Tests
+tests/
+
+# Docs
+README.md
+plan.md
+
+# Alembic cache
+alembic/__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Docker
+docker-compose.yml
+
+# Node (if frontend appears)
+node_modules/
+dist/
+build/
+
+plan.md
