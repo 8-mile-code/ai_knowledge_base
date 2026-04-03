@@ -12,20 +12,22 @@ authors = [
 license = { text = "MIT" }
 
 dependencies = [
-"fastapi>=0.135.1",
-"uvicorn>=0.41.0",
-"pydantic-settings>=2.0.0",
-"python-dotenv>=1.0.0",
-"sqlalchemy>=2.0.0",
-"asyncpg>=0.29.0",
-"alembic>=1.13.0",
-"pgvector>=0.4.2",
-"httpx>=0.27.0",
-"celery>=5.4.0",
-"redis>=5.0.0",
-"openai>=1.30.0",
-"tenacity>=8.2.3",
-"orjson>=3.10.0"
+    "fastapi>=0.135.1",
+    "uvicorn>=0.41.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "sqlalchemy>=2.0.0",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    "pgvector>=0.4.2",
+    "httpx>=0.27.0",
+    "celery>=5.4.0",
+    "redis>=5.0.0",
+    "openai>=1.30.0",
+    "tenacity>=8.2.3",
+    "orjson>=3.10.0",
+    "isort>=8.0.1",
+    "greenlet>=3.3.2",
 ]
 
 [dependency-groups]
