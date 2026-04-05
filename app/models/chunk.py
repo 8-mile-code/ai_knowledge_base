@@ -1,7 +1,9 @@
-from sqlalchemy import ForeignKey, Text, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base, TimestampMixin
 from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey, Integer, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from .document import Document

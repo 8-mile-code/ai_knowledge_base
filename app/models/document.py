@@ -1,11 +1,13 @@
-from sqlalchemy import String, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base, TimestampMixin
 from typing import TYPE_CHECKING
 
+from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base, TimestampMixin
+
 if TYPE_CHECKING:
-    from .user import User
     from .chunk import Chunk
+    from .user import User
 
 
 class Document(Base, TimestampMixin):

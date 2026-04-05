@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
+
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from pgvector.sqlalchemy import Vector
+
 from app.db.base import Base, TimestampMixin
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .chunk import Chunk
