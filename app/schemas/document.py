@@ -19,7 +19,7 @@ class DocumentUpdate(DocumentBase):
     content: str | None = None
 
 
-class DocumentRead(BaseSchema):
+class DocumentRead(BaseSchema, DocumentBase):
     id: int
     created_at: datetime
     updated_at: datetime
