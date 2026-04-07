@@ -1,13 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import Document
 from app.repositories.document_repository import DocumentRepository
 from app.schemas.document import DocumentCreate
-from app.models.document import Document
+from app.services.chunk_service import ChunkService
 
 
 class DocumentService:
-    def __init__(self, repo: DocumentRepository):
+    def __init__(
+            self,
+            repo: DocumentRepository,
+            chunk_service: ChunkService
+    ):
         self.repo = repo
+        self.chunk_service = chunk_service
 
     async def create_document(
             self,
@@ -15,7 +21,14 @@ class DocumentService:
             document_in: DocumentCreate,
             user_id: int
     ) -> Document:
-        return await self.repo.create(db, document_in, user_id)
+        document = await self.repo.create(db, document_in, user_id)
+
+        await self.chunk_service.create_chunks(
+            db,
+            document.id,
+            document.content
+        )
+        return document
 
     async def get_document(
             self,

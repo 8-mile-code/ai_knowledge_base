@@ -2,13 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.repositories.document_repository import DocumentRepository
+from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.document import DocumentCreate, DocumentRead
 from app.services.document_service import DocumentService
-from app.repositories.document_repository import DocumentRepository
+from app.services.chunk_service import ChunkService
+
+chunk_service = ChunkService(ChunkRepository())
+
+document_service = DocumentService(
+    DocumentRepository(),
+    chunk_service
+)
 
 router = APIRouter(prefix="/documents", tags=["📑 Documents"])
-
-document_service = DocumentService(DocumentRepository())
 
 
 @router.post(
