@@ -7,10 +7,10 @@ Create Date: 2026-04-07 16:07:54.193433
 """
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
 import pgvector.sqlalchemy
+import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '5e6cea237e62'

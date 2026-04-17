@@ -15,8 +15,22 @@ services:
     image: redis:7
     container_name: rag_redis
     restart: always
+    env_file:
+      - .env
     ports:
       - "6379:6379"
+  
+  celery:
+    build:
+      context: .
+      dockerfile: docker/celery.Dockerfile
+    container_name: rag_celery
+    command: uv run celery -A app.core.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

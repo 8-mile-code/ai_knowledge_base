@@ -9,6 +9,14 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     DEBUG: bool
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
+
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
     @property
     def DATABASE_URL_ASYNC(self) -> str:
         return (
