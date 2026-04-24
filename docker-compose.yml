@@ -31,6 +31,9 @@ services:
       - postgres
     env_file:
       - .env
+    environment:
+      REDIS_HOST: redis
+      DB_HOST: postgres
 
 volumes:
   postgres_data:

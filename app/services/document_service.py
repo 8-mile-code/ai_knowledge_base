@@ -4,6 +4,7 @@ from app.models.document import Document
 from app.repositories.document_repository import DocumentRepository
 from app.schemas.document import DocumentCreate
 from app.services.chunk_service import ChunkService
+from app.tasks.document_tasks import process_document
 
 
 class DocumentService:
@@ -23,11 +24,8 @@ class DocumentService:
     ) -> Document:
         document = await self.repo.create(db, document_in, user_id)
 
-        await self.chunk_service.create_chunks(
-            db,
-            document.id,
-            document.content
-        )
+        process_document.delay(document.id)
+        print("TASK SENT")
         return document
 
     async def get_document(
