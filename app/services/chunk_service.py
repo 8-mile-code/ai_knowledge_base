@@ -19,8 +19,17 @@ class ChunkService:
 
         while start < len(text):
             end = start + chunk_size
-            chunk = text[start:end]
-            chunks.append(chunk)
+            raw_chunk = text[start:end]
+
+            last_space = raw_chunk.rfind(" ")
+            if last_space != -1:
+                chunk = raw_chunk[:last_space]
+            else:
+                chunk = raw_chunk
+            
+            if chunk.strip():
+                chunks.append(chunk)
+
             start += chunk_size - overlap
 
         return chunks
