@@ -17,7 +17,9 @@ class Document(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(String(255))
     content: Mapped[str] = mapped_column(Text)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
 
     user: Mapped["User"] = relationship(back_populates="documents")
     chunks: Mapped[list["Chunk"]] = relationship(

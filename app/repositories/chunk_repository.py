@@ -11,4 +11,8 @@ class ChunkRepository:
     ) -> list[Chunk]:
         db.add_all(chunks)
         await db.commit()
+        
+        for chunk in chunks:
+            await db.refresh(chunk)
+
         return chunks

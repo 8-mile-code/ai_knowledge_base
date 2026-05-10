@@ -17,7 +17,7 @@ class Embedding(Base, TimestampMixin):
     embedding: Mapped[list[float]] = mapped_column(Vector(1536))
 
     chunk_id: Mapped[int] = mapped_column(
-        ForeignKey("chunks.id"), unique=True, index=True
+        ForeignKey("chunks.id", ondelete="CASCADE"), unique=True, index=True
     )
 
     chunk: Mapped["Chunk"] = relationship(back_populates="embedding")

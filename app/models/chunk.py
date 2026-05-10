@@ -18,7 +18,7 @@ class Chunk(Base, TimestampMixin):
     index: Mapped[int] = mapped_column(Integer)
 
     document_id: Mapped[int] = mapped_column(
-        ForeignKey("documents.id"), index=True
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
     )
 
     document: Mapped["Document"] = relationship(back_populates="chunks")

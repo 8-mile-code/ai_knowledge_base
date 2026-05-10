@@ -28,6 +28,7 @@ dependencies = [
     "orjson>=3.10.0",
     "isort>=8.0.1",
     "greenlet>=3.3.2",
+    "sentence-transformers>=5.4.1",
 ]
 
 [dependency-groups]
