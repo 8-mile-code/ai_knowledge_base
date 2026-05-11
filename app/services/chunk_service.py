@@ -26,7 +26,7 @@ class ChunkService:
                 chunk = raw_chunk[:last_space]
             else:
                 chunk = raw_chunk
-            
+
             if chunk.strip():
                 chunks.append(chunk)
 

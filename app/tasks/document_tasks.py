@@ -42,7 +42,7 @@ async def _process_document(document_id: int):
             )
 
             session.add(embedding)
-        
+
         await session.commit()
 
         print(f"Chunks and embeddings created for document {document_id}")
