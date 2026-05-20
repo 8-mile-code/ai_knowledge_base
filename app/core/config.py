@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL_SYNC(self) -> str:
         return (
-            f"postgresql://"
+            f"postgresql+psycopg://"
             f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"
             )

@@ -1,48 +1,101 @@
-import asyncio
+from datetime import UTC, datetime
+
+from celery.utils.log import get_task_logger
+from sqlalchemy import delete, select
 
 from app.core.celery_app import celery_app
-from app.db.session import AsyncSessionLocal
+from app.db.session import SessionLocal
+from app.models.chunk import Chunk
+from app.models.document import Document, DocumentStatus
 from app.models.embedding import Embedding
 from app.repositories.chunk_repository import ChunkRepository
-from app.repositories.document_repository import DocumentRepository
 from app.services.chunk_service import ChunkService
-from app.services.embedding_service import EmbeddingService
+from app.services.sync_embedding_service import SyncEmbeddingService
+
+logger = get_task_logger(__name__)
 
 
-@celery_app.task
-def process_document(document_id: int):
-    asyncio.run(_process_document(document_id))
+@celery_app.task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
+def process_document(self, document_id: int) -> None:
+    try:
+        _process_document(document_id)
+    except Exception as exc:
+        _mark_document_failed(document_id, str(exc))
+        raise
 
 
-async def _process_document(document_id: int):
-    async with AsyncSessionLocal() as session:
+def _process_document(document_id: int) -> None:
+    chunk_service = ChunkService(ChunkRepository())
+    embedding_service = SyncEmbeddingService()
 
-        document_repo = DocumentRepository()
-        chunk_repo = ChunkRepository()
-        chunk_service = ChunkService(chunk_repo)
+    with SessionLocal() as session:
+        document = session.get(Document, document_id)
+        if not document:
+            logger.info("Document %s not found, skipping", document_id)
+            return
 
-        document = await document_repo.get(session, document_id)
+        document.status = DocumentStatus.PROCESSING.value
+        document.processing_error = None
+        document.processed_at = None
+        content = document.content
+        session.commit()
 
+    chunk_texts = chunk_service.split_text(content)
+    vectors = embedding_service.generate_embeddings(chunk_texts)
+
+    with SessionLocal() as session:
+        document = session.execute(
+            select(Document)
+            .where(Document.id == document_id)
+            .with_for_update()
+        ).scalar_one_or_none()
+
+        if not document:
+            logger.info("Document %s was deleted during processing", document_id)
+            return
+
+        session.execute(delete(Chunk).where(Chunk.document_id == document_id))
+        session.flush()
+
+        chunks = [
+            Chunk(
+                document_id=document_id,
+                content=chunk_text,
+                index=index,
+            )
+            for index, chunk_text in enumerate(chunk_texts)
+        ]
+        session.add_all(chunks)
+        session.flush()
+
+        embeddings = [
+            Embedding(chunk_id=chunk.id, embedding=vector)
+            for chunk, vector in zip(chunks, vectors, strict=True)
+        ]
+        session.add_all(embeddings)
+
+        document.status = DocumentStatus.COMPLETED.value
+        document.processing_error = None
+        document.processed_at = datetime.now(UTC)
+
+        session.commit()
+        logger.info(
+            "Chunks and embeddings created for document %s",
+            document_id,
+        )
+
+
+def _mark_document_failed(document_id: int, error_message: str) -> None:
+    with SessionLocal() as session:
+        document = session.get(Document, document_id)
         if not document:
             return
 
-        chunks = await chunk_service.create_chunks(
-            session,
-            document_id=document.id,
-            text=document.content
-        )
-        embedding_service = EmbeddingService()
-
-        for chunk in chunks:
-            vector = await embedding_service.generate_embedding(chunk.content)
-
-            embedding = Embedding(
-                chunk_id=chunk.id,
-                embedding=vector,
-            )
-
-            session.add(embedding)
-
-        await session.commit()
-
-        print(f"Chunks and embeddings created for document {document_id}")
+        document.status = DocumentStatus.FAILED.value
+        document.processing_error = error_message[:4000]
+        session.commit()

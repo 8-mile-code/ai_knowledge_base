@@ -21,5 +21,8 @@ class DocumentUpdate(DocumentBase):
 
 class DocumentRead(BaseSchema, DocumentBase):
     id: int
+    status: str
+    processing_error: str | None = None
+    processed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
