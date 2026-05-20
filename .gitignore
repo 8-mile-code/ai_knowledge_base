@@ -17,7 +17,7 @@ env/
 
 # uv
 .uv/
-uv.lock
+
 
 # Environment
 .env
