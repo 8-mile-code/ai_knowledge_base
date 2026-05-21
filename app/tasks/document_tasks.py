@@ -46,6 +46,11 @@ def _process_document(document_id: int) -> None:
         session.commit()
 
     chunk_texts = chunk_service.split_text(content)
+    if not chunk_texts:
+        raise ValueError(
+            "Document content is empty or cannot be split into chunks"
+        )
+
     vectors = embedding_service.generate_embeddings(chunk_texts)
 
     with SessionLocal() as session:
@@ -56,7 +61,9 @@ def _process_document(document_id: int) -> None:
         ).scalar_one_or_none()
 
         if not document:
-            logger.info("Document %s was deleted during processing", document_id)
+            logger.info(
+                "Document %s was deleted during processing", document_id
+            )
             return
 
         session.execute(delete(Chunk).where(Chunk.document_id == document_id))
