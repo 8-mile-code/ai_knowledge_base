@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    OPENAI_LLM_MODEL: str = "gpt-4o-mini"
     EMBEDDING_DIMENSION: int = 1536
 
     @property

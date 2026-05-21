@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 
-from app.api.routers import documents, search
+from app.api.routers import documents, search, ask
 
 app = FastAPI(title="AI Knowledge Base API")
 
 
 app.include_router(documents.router)
 app.include_router(search.router)
+app.include_router(ask.router)
 
 
 @app.get("/")
