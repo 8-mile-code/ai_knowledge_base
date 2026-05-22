@@ -1,6 +1,7 @@
 from openai import AsyncOpenAI
 
 from app.core.config import settings
+from app.services.cache_service import CacheService
 
 
 class LLMService:
@@ -13,6 +14,16 @@ class LLMService:
             question: str,
             context: str,
     ) -> str:
+        cached_key = CacheService.build_key(
+            "llm_answer",
+            self.model,
+            question,
+            context,
+        )
+        cached_answer = await CacheService.get_json(cached_key)
+
+        if cached_answer is not None:
+            return cached_answer
 
         response = await self.client.chat.completions.create(
             model=self.model,
@@ -36,5 +47,12 @@ class LLMService:
             ],
             temperature=0.2,
         )
+        answer = response.choices[0].message.content or ""
 
-        return response.choices[0].message.content or ""
+        await CacheService.set_json(
+            cached_key,
+            answer,
+            ttl=60 * 60 * 24,
+        )
+
+        return answer
