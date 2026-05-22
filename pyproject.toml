@@ -30,6 +30,9 @@ dependencies = [
     "isort>=8.0.1",
     "greenlet>=3.3.2",
     "sentence-transformers>=5.4.1",
+    "python-jose[cryptography]>=3.5.0",
+    "passlib[argon2]>=1.7.4",
+    "python-multipart>=0.0.29",
 ]
 
 [dependency-groups]

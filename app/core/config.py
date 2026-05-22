@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     OPENAI_LLM_MODEL: str = "gpt-4o-mini"
     EMBEDDING_DIMENSION: int = 1536
 
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     @property
     def REDIS_URL(self) -> str:
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
