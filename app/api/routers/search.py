@@ -7,7 +7,6 @@ from app.schemas.search import SearchResult
 from app.services.embedding_service import EmbeddingService
 from app.services.search_service import SearchService
 
-
 search_service = SearchService(
         embedding_service=EmbeddingService(),
         chunk_repo=ChunkRepository()

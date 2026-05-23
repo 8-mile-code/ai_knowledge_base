@@ -10,7 +10,6 @@ from app.schemas.auth import Token, UserLogin, UserRegister
 from app.schemas.user import UserRead
 from app.services.auth_service import AuthService
 
-
 router = APIRouter(prefix="/auth", tags=["🔐 Auth"])
 
 

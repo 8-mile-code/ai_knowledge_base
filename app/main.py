@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.routers import documents, search, ask, auth
+from app.api.routers import ask, auth, documents, search
 
 app = FastAPI(title="AI Knowledge Base API")
 
