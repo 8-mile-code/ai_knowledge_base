@@ -11,6 +11,10 @@ app.include_router(ask.router)
 app.include_router(auth.router)
 
 
-@app.get("/")
+@app.get(
+        "/",
+        summary="Health check",
+        tags=["🩻 Health"],
+    )
 async def health_check():
     return {"status": "ok"}

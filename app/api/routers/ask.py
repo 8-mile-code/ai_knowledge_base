@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 from app.db.session import get_db
 from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.ask import AskRequest, AskResponse, AskSource
@@ -21,7 +20,7 @@ ask_service = AskService(
     llm_service=LLMService()
 )
 
-router = APIRouter(prefix="/ask", tags=[" Ask"])
+router = APIRouter(prefix="/ask", tags=["🤖 Ask"])
 
 
 @router.post(
