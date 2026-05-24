@@ -24,9 +24,12 @@ class ChunkService:
             end = start + chunk_size
             raw_chunk = text[start:end]
 
-            last_space = raw_chunk.rfind(" ")
-            if last_space != -1:
-                chunk = raw_chunk[:last_space]
+            if end < len(text):
+                last_space = raw_chunk.rfind(" ")
+                if last_space != -1:
+                    chunk = raw_chunk[:last_space]
+                else:
+                    chunk = raw_chunk
             else:
                 chunk = raw_chunk
 
