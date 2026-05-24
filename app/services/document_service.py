@@ -48,4 +48,4 @@ class DocumentService:
             document_id: int,
             user_id: int,
     ) -> bool:
-        await self.repo.delete(db, document_id, user_id)
+        return await self.repo.delete(db, document_id, user_id)
