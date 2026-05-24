@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.chunk import Chunk
+from app.models.document import Document
 from app.models.embedding import Embedding
 
 
@@ -24,11 +25,14 @@ class ChunkRepository:
             self,
             db: AsyncSession,
             query_embedding: list[float],
+            user_id: int,
             limit: int = 5
     ) -> list[Chunk]:
         stmt = (
             select(Chunk)
             .join(Embedding)
+            .join(Document)
+            .where(Document.user_id == user_id)
             .options(selectinload(Chunk.embedding))
             .order_by(Embedding.embedding.cosine_distance(query_embedding))
             .limit(limit)

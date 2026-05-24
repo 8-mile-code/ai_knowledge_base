@@ -18,11 +18,13 @@ class AskService:
             self,
             db: AsyncSession,
             question: str,
+            user_id: int,
             limit: int = 5,
     ) -> tuple[str, list[Chunk]]:
         chunks = await self.search_service.get_similar_chunks(
             db=db,
             query=question,
+            user_id=user_id,
             limit=limit
         )
 

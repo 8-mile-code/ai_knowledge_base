@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.user import User
 from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.ask import AskRequest, AskResponse, AskSource
 from app.services.ask_service import AskService
@@ -29,12 +31,14 @@ router = APIRouter(prefix="/ask", tags=["🤖 Ask"])
 )
 async def ask_question(
     request: AskRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     answer, chunks = await ask_service.ask(
         db=db,
         question=request.question,
-        limit=5
+        user_id=current_user.id,
+        limit=5,
     )
 
     return AskResponse(

@@ -18,6 +18,7 @@ class SearchService:
             self,
             db: AsyncSession,
             query: str,
+            user_id: int,
             limit: int = 5
     ) -> list[Chunk]:
         query_embedding = await self.embedding_service.generate_embedding(
@@ -27,5 +28,6 @@ class SearchService:
         return await self.chunk_repo.get_similar_chunks(
             db=db,
             query_embedding=query_embedding,
+            user_id=user_id,
             limit=limit
         )

@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.user import User
 from app.repositories.chunk_repository import ChunkRepository
 from app.schemas.search import SearchResult
 from app.services.embedding_service import EmbeddingService
 from app.services.search_service import SearchService
 
 search_service = SearchService(
-        embedding_service=EmbeddingService(),
-        chunk_repo=ChunkRepository()
-    )
+    embedding_service=EmbeddingService(),
+    chunk_repo=ChunkRepository()
+)
 
 router = APIRouter(prefix="/search", tags=["🔍 Search"])
 
@@ -22,13 +24,15 @@ router = APIRouter(prefix="/search", tags=["🔍 Search"])
 )
 async def search(
     query: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
 
     chunks = await search_service.get_similar_chunks(
         db=db,
         query=query,
-        limit=5
+        user_id=current_user.id,
+        limit=5,
     )
 
     return chunks
