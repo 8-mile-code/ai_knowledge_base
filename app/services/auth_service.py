@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import InvalidCredentialsError, UserAlreadyExistsError
 from app.core.security import (create_access_token, hash_password,
                                verify_password)
 from app.models.user import User
@@ -18,7 +19,7 @@ class AuthService:
     ) -> User:
         existing_user = await self.repo.get_by_email(db, user_in.email)
         if existing_user:
-            raise ValueError("User with this email already exists")
+            raise UserAlreadyExistsError
 
         hashed_password = hash_password(user_in.password)
         user = await self.repo.create(
@@ -35,10 +36,10 @@ class AuthService:
     ) -> Token:
         user = await self.repo.get_by_email(db, user_in.email)
         if not user:
-            raise ValueError("Invalid email or password")
+            raise InvalidCredentialsError
 
         if not verify_password(user_in.password, user.password):
-            raise ValueError("Invalid email or password")
+            raise InvalidCredentialsError
 
         access_token = create_access_token(subject=user.id)
 

@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.exceptions import InvalidCredentialsError, UserAlreadyExistsError
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -29,10 +30,10 @@ async def register(
 ):
     try:
         return await auth_service.register_user(db, user_in)
-    except ValueError as error:
+    except UserAlreadyExistsError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error)
+            detail="User with this email already exists",
         ) from error
 
 
@@ -48,7 +49,7 @@ async def login(
     )
     try:
         return await auth_service.authenticate_user(db, user_in)
-    except ValueError as error:
+    except InvalidCredentialsError as error:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",

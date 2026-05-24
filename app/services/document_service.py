@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import DocumentNotFoundError
 from app.models.document import Document
 from app.repositories.document_repository import DocumentRepository
 from app.schemas.document import DocumentCreate
@@ -32,8 +33,11 @@ class DocumentService:
             db: AsyncSession,
             document_id: int,
             user_id: int,
-    ) -> Document | None:
-        return await self.repo.get(db, document_id, user_id)
+    ) -> Document:
+        document = await self.repo.get(db, document_id, user_id)
+        if not document:
+            raise DocumentNotFoundError
+        return document
 
     async def get_documents(
             self,
@@ -47,5 +51,7 @@ class DocumentService:
             db: AsyncSession,
             document_id: int,
             user_id: int,
-    ) -> bool:
-        return await self.repo.delete(db, document_id, user_id)
+    ) -> None:
+        deleted = await self.repo.delete(db, document_id, user_id)
+        if not deleted:
+            raise DocumentNotFoundError

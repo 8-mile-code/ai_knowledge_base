@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.exceptions import DocumentNotFoundError
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.chunk_repository import ChunkRepository
@@ -60,14 +61,16 @@ async def get_document(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    document = await document_service.get_document(
-        db,
-        document_id=document_id,
-        user_id=current_user.id,
-    )
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    return document
+    try:
+        return await document_service.get_document(
+            db,
+            document_id=document_id,
+            user_id=current_user.id,
+        )
+    except DocumentNotFoundError as error:
+        raise HTTPException(
+            status_code=404, detail="Document not found"
+        ) from error
 
 
 @router.delete(
@@ -78,12 +81,15 @@ async def delete_document(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    deleted = await document_service.delete_document(
+    try:
+        await document_service.delete_document(
             db,
             document_id=document_id,
             user_id=current_user.id,
-    )
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Document not found")
+        )
+    except DocumentNotFoundError as error:
+        raise HTTPException(
+            status_code=404, detail="Document not found"
+        ) from error
 
     return {"status": "Document deleted"}
