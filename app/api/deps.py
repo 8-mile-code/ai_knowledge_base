@@ -5,7 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.user import User
+from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.user_repository import UserRepository
+from app.services.ask_service import AskService
+from app.services.embedding_service import EmbeddingService
+from app.services.llm_service import LLMService
+from app.services.search_service import SearchService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -38,3 +43,17 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+
+def get_search_service() -> SearchService:
+    return SearchService(
+        embedding_service=EmbeddingService(),
+        chunk_repo=ChunkRepository(),
+    )
+
+
+def get_ask_service() -> AskService:
+    return AskService(
+        search_service=get_search_service(),
+        llm_service=LLMService(),
+    )
