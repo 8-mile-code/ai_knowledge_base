@@ -19,7 +19,7 @@ class AuthService:
     ) -> User:
         existing_user = await self.repo.get_by_email(db, user_in.email)
         if existing_user:
-            raise UserAlreadyExistsError
+            raise UserAlreadyExistsError()
 
         hashed_password = hash_password(user_in.password)
         user = await self.repo.create(
@@ -36,10 +36,10 @@ class AuthService:
     ) -> Token:
         user = await self.repo.get_by_email(db, user_in.email)
         if not user:
-            raise InvalidCredentialsError
+            raise InvalidCredentialsError()
 
         if not verify_password(user_in.password, user.password):
-            raise InvalidCredentialsError
+            raise InvalidCredentialsError()
 
         access_token = create_access_token(subject=user.id)
 

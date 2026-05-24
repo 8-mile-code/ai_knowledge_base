@@ -36,7 +36,7 @@ class DocumentService:
     ) -> Document:
         document = await self.repo.get(db, document_id, user_id)
         if not document:
-            raise DocumentNotFoundError
+            raise DocumentNotFoundError()
         return document
 
     async def get_documents(
@@ -54,4 +54,4 @@ class DocumentService:
     ) -> None:
         deleted = await self.repo.delete(db, document_id, user_id)
         if not deleted:
-            raise DocumentNotFoundError
+            raise DocumentNotFoundError()
