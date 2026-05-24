@@ -25,22 +25,27 @@ class DocumentService:
         document = await self.repo.create(db, document_in, user_id)
 
         process_document.delay(document.id)
-        print("TASK SENT")
         return document
 
     async def get_document(
             self,
             db: AsyncSession,
-            document_id: int
+            document_id: int,
+            user_id: int,
     ) -> Document | None:
-        return await self.repo.get(db, document_id)
+        return await self.repo.get(db, document_id, user_id)
 
-    async def get_documents(self, db: AsyncSession) -> list[Document]:
-        return await self.repo.get_all(db)
+    async def get_documents(
+            self,
+            db: AsyncSession,
+            user_id: int,
+    ) -> list[Document]:
+        return await self.repo.get_all(db, user_id)
 
     async def delete_document(
             self,
             db: AsyncSession,
-            document_id: int
-    ) -> None:
-        await self.repo.delete(db, document_id)
+            document_id: int,
+            user_id: int,
+    ) -> bool:
+        await self.repo.delete(db, document_id, user_id)

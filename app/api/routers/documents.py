@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.user import User
 from app.repositories.chunk_repository import ChunkRepository
 from app.repositories.document_repository import DocumentRepository
 from app.schemas.document import DocumentCreate, DocumentRead
@@ -25,12 +27,13 @@ router = APIRouter(prefix="/documents", tags=["📑 Documents"])
     )
 async def create_document(
     document_in: DocumentCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     document = await document_service.create_document(
         db,
         document_in,
-        user_id=1,
+        user_id=current_user.id,
     )
     return document
 
@@ -38,22 +41,30 @@ async def create_document(
 @router.get(
         "",
         response_model=list[DocumentRead],
-        summary="Get all documents"
+        summary="Get all documents",
     )
-async def get_documents(db: AsyncSession = Depends(get_db)):
-    return await document_service.get_documents(db)
+async def get_documents(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await document_service.get_documents(db, user_id=current_user.id)
 
 
 @router.get(
         "/{document_id}",
         response_model=DocumentRead,
-        summary="Get a document by ID"
+        summary="Get a document by ID",
     )
 async def get_document(
     document_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    document = await document_service.get_document(db, document_id)
+    document = await document_service.get_document(
+        db,
+        document_id=document_id,
+        user_id=current_user.id,
+    )
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     return document
@@ -64,7 +75,15 @@ async def get_document(
     )
 async def delete_document(
     document_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    await document_service.delete_document(db, document_id)
+    deleted = await document_service.delete_document(
+            db,
+            document_id=document_id,
+            user_id=current_user.id,
+    )
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Document not found")
+
     return {"status": "Document deleted"}
