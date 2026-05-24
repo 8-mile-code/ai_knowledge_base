@@ -5,7 +5,7 @@ from app.repositories.chunk_repository import ChunkRepository
 
 
 class ChunkService:
-    def __init__(self, repo: ChunkRepository):
+    def __init__(self, repo: ChunkRepository) -> None:
         self.repo = repo
 
     def split_text(
@@ -14,6 +14,9 @@ class ChunkService:
             chunk_size: int = 500,
             overlap: int = 50
     ) -> list[str]:
+        """Split text into overlapping
+        chunks without cutting words when possible.
+        """
         chunks = []
         start = 0
 
@@ -39,7 +42,7 @@ class ChunkService:
             db: AsyncSession,
             document_id: int,
             text: str,
-    ):
+    ) -> list[Chunk]:
         texts = self.split_text(text)
 
         chunks = [

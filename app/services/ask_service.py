@@ -38,6 +38,7 @@ class AskService:
         return answer, chunks
 
     def _build_context(self, chunks: list[Chunk]) -> str:
+        """Build RAG context from retrieved chunks for the LLM prompt."""
         return "\n\n".join(
             f"Chunk {chunk.id}: \n{chunk.content}"
             for chunk in chunks

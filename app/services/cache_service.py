@@ -8,6 +8,11 @@ from app.core.redis import redis_client
 class CacheService:
     @staticmethod
     def build_key(prefix: str, *parts: str) -> str:
+        """Build a stable cache key from a prefix and raw value.
+
+        The raw value is hashed to keep Redis keys short and avoid storing
+        potentially large or sensitive input directly in the key.
+        """
         raw_key = ":".join(parts)
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
         return f"{prefix}:{key_hash}"

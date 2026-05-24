@@ -33,6 +33,11 @@ def create_access_token(subject: str | int) -> str:
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
+    """Decode and validate a JWT access token.
+
+    Raises:
+        ValueError: If the token is invalid, expired, or cannot be decoded.
+    """
     try:
         payload = jwt.decode(
             token,
@@ -41,4 +46,4 @@ def decode_access_token(token: str) -> dict[str, Any]:
         )
         return payload
     except JWTError as error:
-        raise JWTError("Invalid token") from error
+        raise ValueError("Invalid token") from error

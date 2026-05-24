@@ -28,6 +28,12 @@ class ChunkRepository:
             user_id: int,
             limit: int = 5
     ) -> list[Chunk]:
+        """Return chunks most similar to the query embedding for one user.
+
+        Results are ordered by pgvector cosine distance and
+        filtered by document ownership so users cannot
+        retrieve chunks from other users' documents.
+        """
         stmt = (
             select(Chunk)
             .join(Embedding)

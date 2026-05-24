@@ -22,6 +22,11 @@ logger = get_task_logger(__name__)
     retry_kwargs={"max_retries": 3},
 )
 def process_document(self, document_id: int) -> None:
+    """Process a document in the Celery worker.
+
+    Splits text into chunks, generates
+    embeddings, and updates processing status.
+    """
     try:
         _process_document(document_id)
     except Exception as exc:

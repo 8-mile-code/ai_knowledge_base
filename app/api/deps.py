@@ -19,6 +19,11 @@ async def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: AsyncSession = Depends(get_db),
 ) -> User:
+    """Validate JWT access token and return the authenticated user.
+
+    The token subject (`sub`) is treated as the user ID. The user is loaded
+    from the database to ensure the account still exists.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
