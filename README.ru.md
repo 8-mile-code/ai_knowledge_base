@@ -241,7 +241,7 @@ erDiagram
 
 ## Контакты
 
-- Email: danil.boghatov17@mail.com  
+- Email: danil.boghatov17@gmail.com  
 - GitHub: [https://github.com/8-mile-code](https://github.com/8-mile-code)    
 
 
