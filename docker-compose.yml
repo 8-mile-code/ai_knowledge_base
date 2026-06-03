@@ -1,4 +1,21 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: rag_backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: ankane/pgvector
     container_name: rag_postgres
@@ -23,7 +40,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/celery.Dockerfile
+      dockerfile: docker/backend.Dockerfile
     container_name: rag_celery
     command: uv run celery -A app.core.celery_app worker --loglevel=info
     depends_on:
