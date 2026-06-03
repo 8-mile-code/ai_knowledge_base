@@ -1,21 +1,22 @@
+[English](README.md) | [Русский](README.ru.md)
 # AI-Knowledge-Base-API (RAG)
 
-## Описание
+## Description
 
-AI-Knowledge-Base — это backend-сервис для **Retrieval-Augmented Generation (RAG)**.  
-Проект позволяет:
+AI-Knowledge-Base is a backend service for **Retrieval-Augmented Generation (RAG)**.  
+The project allows you to:
 
-- Загружать документы через API
-- Разбивать текст на чанки
-- Генерировать векторные embeddings через OpenAI
-- Хранить embeddings в PostgreSQL с расширением `pgvector`
-- Выполнять семантический поиск и генерацию ответа LLM по релевантным фрагментам текста
+- Upload documents via API
+- Split text into chunks
+- Generate vector embeddings via OpenAI
+- Store embeddings in PostgreSQL with the `pgvector` extension
+- Perform semantic search and generate LLM responses based on relevant text fragments
 
-Проект реализован на **FastAPI + Celery + PostgreSQL + Redis**, с поддержкой Docker.
+The project is built on **FastAPI + Celery + PostgreSQL + Redis**, with Docker support.
 
 ---
 
-## Стек технологий
+## Tech Stack
 
 - **Backend:** FastAPI, SQLAlchemy, Pydantic, Celery
 - **Database:** PostgreSQL + pgvector
@@ -26,97 +27,138 @@ AI-Knowledge-Base — это backend-сервис для **Retrieval-Augmented G
 
 ---
 
-## Архитектура
+## Features
 
-Проект построен по слоям:
+- User registration and authentication via JWT
+- Document upload via API
+- Asynchronous document processing with Celery
+- Text splitting into chunks
+- Embedding generation via OpenAI
+- Embedding storage in PostgreSQL with pgvector
+- Semantic search across user documents
+- LLM-based response generation using retrieved context
+- Source attribution in responses
+- Caching of embeddings and LLM responses via Redis
+
+---
+
+## Architecture
+
+The project follows a layered architecture:
 
 - `app/api/routers` — HTTP endpoints
-- `app/schemas` — Pydantic-схемы запросов и ответов
-- `app/services` — бизнес-логика
-- `app/repositories` — работа с БД
-- `app/models` — SQLAlchemy-модели
-- `app/tasks` — Celery worker для обработки документов
-- `app/core` — конфигурация, Redis, Celery, security
-- `app/db` — подключение к базе данных
+- `app/schemas` — Pydantic request/response schemas
+- `app/services` — business logic
+- `app/repositories` — database operations
+- `app/models` — SQLAlchemy models
+- `app/tasks` — Celery worker for document processing
+- `app/core` — configuration, Redis, Celery, security
+- `app/db` — database connection
 
-**Ingestion pipeline через Celery:**
+### System Workflow
 
-1. Пользователь создаёт документ через `/documents/`  
-2. Celery task `process_document(document_id)` разбивает документ на чанки  
-3. Генерируются embeddings для каждого чанка  
-4. Embeddings сохраняются в PostgreSQL  
-5. Документ готов для поиска и RAG
+```mermaid
+flowchart LR
+    User[User] -->|POST /documents/| Backend[FastAPI Backend]
+    Backend -->|Creates document| Postgres[(PostgreSQL + pgvector)]
+    Backend -->|Enqueues task| Celery[Celery Worker]
+    Celery -->|Splits text into chunks| Postgres
+    Celery -->|Generates embeddings| OpenAIEmbeddings[OpenAI Embeddings]
+    Celery -->|Stores embeddings| Postgres
+
+    User -->|POST /ask| Backend
+    Backend -->|Question embedding| OpenAIEmbeddings
+    Backend -->|Searches similar chunks| Postgres
+    Backend -->|Check/cache| Redis[(Redis)]
+    Backend -->|Context + question| OpenAILLM[OpenAI LLM]
+    OpenAILLM -->|Answer| Backend
+    Backend -->|answer + sources| User
+```
+
+### Document Ingestion Pipeline (Celery)
+
+1. User creates a document via `/documents/`  
+2. Celery task `process_document(document_id)` splits the document into chunks  
+3. Embeddings are generated for each chunk  
+4. Embeddings are stored in PostgreSQL  
+5. Document is ready for search and RAG
 
 ---
 
-## Как работает RAG
+## How RAG Works
 
-RAG (Retrieval-Augmented Generation) — это два этапа:
+RAG (Retrieval-Augmented Generation) consists of two stages:
 
-1. **Retrieval** — поиск релевантных чанков в базе по embedding вопроса
-2. **Generation** — LLM формирует ответ на основе найденных чанков
+1. **Retrieval** — searching for relevant chunks based on the question embedding
+2. **Generation** — LLM formulates an answer based on the retrieved chunks
 
-Pipeline для `/ask`:
+**Pipeline for `/ask`:**
 
-- Пользователь отправляет вопрос → сервис создаёт embedding  
-- В PostgreSQL + pgvector ищутся похожие чанки  
-- Сформированный контекст передаётся LLM  
-- Ответ возвращается вместе с источниками (`sources`)  
+- User sends a question → service creates an embedding  
+- PostgreSQL + pgvector searches for similar chunks  
+- Retrieved context is passed to the LLM  
+- Response is returned with sources (`sources`)  
+- Repeated requests to `/ask` are cached in Redis.  
+This prevents calling the LLM again for identical questions and context, making subsequent requests significantly faster.
 
----
+Running with Docker
 
-## Запуск через Docker
-
-1. Создать `.env` на основе `.env.example`:
+1. Create `.env` file from `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-2. Собрать и поднять все сервисы:
+2. Build and start all services:
 ```bash
 docker compose up --build
 ```
-### Сервисы:
-- backend → FastAPI API на порту 8000
-- postgres → база данных с pgvector
-- redis → кэширование
-- celery → обработка документов
 
-3. Открыть документацию Swagger:
+### Services:
+- **backend** — FastAPI API on port 8000
+- **postgres** — PostgreSQL database with pgvector
+- **redis** — caching layer
+- **celery** — document processing worker
+
+3. Open Swagger API documentation:
 ```bash
 http://localhost:8000/docs
 ```
 
-## Примеры запросов
-### Регистрация пользователя
+## API Request Examples
+
+### User Registration
 ```bash
 curl -X POST http://localhost:8000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@example.com","password":"password123"}'
 ```
-### Логин и получение токена
+
+### Login and Get Token
 ```bash
 curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=demo@example.com&password=password123"
 ```
-### Создание документа
+
+### Create Document
 ```bash
 curl -X POST http://localhost:8000/documents/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"pgvector","content":"pgvector is a PostgreSQL extension for vector similarity search..."}'
 ```
-### Отправка вопроса в /ask
+
+### Ask a Question
 ```bash
 curl -X POST http://localhost:8000/ask \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"question":"What is pgvector used for?"}'
 ```
-### Пример ответа:
-```bash
+
+### Example Response
+```json
 {
   "answer": "pgvector is used for vector similarity search in PostgreSQL.",
   "sources": [
@@ -128,16 +170,25 @@ curl -X POST http://localhost:8000/ask \
   ]
 }
 ```
+
 ---
 
-## ER-диаграмма
+## ER Diagram
 
-Основная модель данных состоит из четырёх сущностей:
+The core data model consists of four entities:
 
-- `users` — пользователи системы.
-- `documents` — документы, загруженные пользователем.
-- `chunks` — фрагменты документов, полученные после разбиения текста.
-- `embeddings` — векторные представления chunks для семантического поиска через pgvector.
+- `users` — system users
+- `documents` — documents uploaded by users
+- `chunks` — document fragments created after text splitting
+- `embeddings` — vector representations of chunks for semantic search via pgvector
+
+**Entity Relationships:**
+
+- `users` → `documents`: one user can have many documents
+- `documents` → `chunks`: one document is split into many chunks
+- `chunks` → `embeddings`: one chunk has one embedding
+
+The `users.password` field stores the password hash, not the plaintext password.
 
 ```mermaid
 erDiagram
@@ -182,3 +233,24 @@ erDiagram
         datetime updated_at
     }
 ```
+
+## Future Enhancements
+
+- Add support for PDF, Markdown, and HTML file uploads
+- Implement a dedicated ingestion service for external data sources
+- Add synchronization with external knowledge base sources
+- Create a frontend for document upload and response display
+- Implement user query history
+- Add comprehensive tests for the complete RAG pipeline
+- Set up CI/CD for automated project validation
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+- Email: danil.boghatov17@mail.com  
+- GitHub: [https://github.com/8-mile-code](https://github.com/8-mile-code)
